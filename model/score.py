@@ -6,10 +6,12 @@ from pycocoevalcap.spice.spice import Spice
 
 
 class Score:
-    def __init__(self):
+    def __init__(self, tokenizer):
 
         nltk.download("punkt")  # 下载punkt数据包，这是NLTK库的一个分词工具，专门用于句子分割和标点符号处理
+        nltk.download("punkt_tab")
         self.ignore_pad_token_for_loss = True  # 计算损失时是否忽略标记
+        self.tokenizer = tokenizer
         pass
 
     def postprocess_text(self, preds, labels):
@@ -22,15 +24,15 @@ class Score:
 
         return preds, labels
 
-    def compute_BLEU_score(self, tokenizer, eval_preds):
+    def compute_BLEU_score(self, eval_preds):
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
         if self.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
-            labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+            labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
 
         # Some simple post-processing
         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds,
@@ -46,21 +48,21 @@ class Score:
 
         # Finalize predictions
         prediction_lens = [
-            np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds
+            np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds
         ]
         result["gen_len"] = np.mean(prediction_lens)
 
         return result
 
-    def compute_ROUGE_score(self, eval_preds, tokenizer):
+    def compute_ROUGE_score(self, eval_preds):
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
         if self.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
-            labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+            labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
 
         # Some simple post-processing
         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds,
@@ -76,21 +78,21 @@ class Score:
 
         # Finalize predictions
         prediction_lens = [
-            np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds
+            np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds
         ]
         result["gen_len"] = np.mean(prediction_lens)
 
         return result
 
-    def compute_METEOR_score(self, eval_preds, tokenizer):
+    def compute_METEOR_score(self, eval_preds):
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
         if self.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
-            labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+            labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
 
         # Some simple post-processing
         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds,
@@ -106,21 +108,21 @@ class Score:
 
         # Finalize predictions
         prediction_lens = [
-            np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds
+            np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds
         ]
         result["gen_len"] = np.mean(prediction_lens)
 
         return result
 
-    def compute_CIDER_score(self, eval_preds, tokenizer):
+    def compute_CIDER_score(self, eval_preds):
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
         if self.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
-            labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+            labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
 
         # Some simple post-processing
         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds,
@@ -143,20 +145,20 @@ class Score:
         result = {"CIDEr": result[0], "Scores": result[1]}
 
         prediction_lens = [
-            np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds
+            np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds
         ]
         result["gen_len"] = np.mean(prediction_lens)
         return result
 
-    def compute_SPICE_score(self, eval_preds, tokenizer):
+    def compute_SPICE_score(self, eval_preds):
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
-        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
         if self.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
-            labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+            labels = np.where(labels != -100, labels, self.tokenizer.pad_token_id)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
 
         # Some simple post-processing
         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds,
@@ -179,7 +181,7 @@ class Score:
         result = {"SPICE": result[0], "Scores": result[1]}
 
         prediction_lens = [
-            np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds
+            np.count_nonzero(pred != self.tokenizer.pad_token_id) for pred in preds
         ]
 
         result["gen_len"] = np.mean(prediction_lens)

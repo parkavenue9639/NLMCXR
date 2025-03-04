@@ -11,11 +11,13 @@ class Trainer:
         self.tokenizer = tokenizer
         self.processed_dataset = processed_dataset
         self.metric_name = metric_name
-        self.metrics = {"BLEU": Score.compute_BLEU_score, "SPICE": Score.compute_SPICE_score,
-                       "CIDER": Score.compute_CIDER_score, "METEOR": Score.compute_METEOR_score,
-                       "ROUGE": Score.compute_ROUGE_score}
+        self.metrics = {"BLEU": Score(tokenizer).compute_BLEU_score, "SPICE": Score(tokenizer).compute_SPICE_score,
+                        "CIDER": Score(tokenizer).compute_CIDER_score, "METEOR": Score(tokenizer).compute_METEOR_score,
+                        "ROUGE": Score(tokenizer).compute_ROUGE_score}
         self.training_args = None
         self.trainer = None
+        self.set_training_args()
+        self.set_trainer()
 
     def set_training_args(self):
         self.training_args = Seq2SeqTrainingArguments(
@@ -24,7 +26,7 @@ class Trainer:
             per_device_train_batch_size=4,
             per_device_eval_batch_size=4,
             output_dir=f"./image-captioning-output-{self.metric_name}",
-            num_train_epochs = 10
+            num_train_epochs=10
         )
         return
 
@@ -38,6 +40,7 @@ class Trainer:
                         eval_dataset=self.processed_dataset['validation'],
                         data_collator=default_data_collator,
                         )
+
     def train(self):
         self.trainer.train()
         torch.mps.empty_cache()
