@@ -1,4 +1,5 @@
 import torch.mps
+import os
 
 from model.score import Score
 from transformers import default_data_collator, Seq2SeqTrainer, Seq2SeqTrainingArguments
@@ -22,7 +23,9 @@ class Trainer:
     def set_training_args(self):
         self.training_args = Seq2SeqTrainingArguments(
             predict_with_generate=True,
-            evaluation_strategy="epoch",
+            evaluation_strategy="epoch",  # 每个epoch评估一次
+            save_strategy="epoch",  # 每个epoch保存一次检查点
+            save_total_limit=3,  # 保留最近三个检查点
             per_device_train_batch_size=4,
             per_device_eval_batch_size=4,
             output_dir=f"./image-captioning-output-{self.metric_name}",
@@ -42,7 +45,10 @@ class Trainer:
                         )
 
     def train(self):
-        self.trainer.train()
+        checkpoint_dir = f"./image-captioning-output-{self.metric_name}"
+        print("Checkpoint directory:", checkpoint_dir)
+        print("Directory contents:", os.listdir(checkpoint_dir))
+        self.trainer.train(resume_from_checkpoint=True)
         torch.mps.empty_cache()
 
     def save_model(self):
